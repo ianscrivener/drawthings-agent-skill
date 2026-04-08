@@ -20,7 +20,7 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Read current version
         id: current
@@ -72,12 +72,15 @@ jobs:
             -x ".pytest_cache/*" \
             -x "tests/*" \
             -x "AGENTS.md" \
+            -x "assets/gen_code.sh" \
+            -x "assets/proto/*" \
+            -x "assets/fbs/*" \
             -x ".DS_Store" \
             -x "*/.DS_Store"
           echo "zip_name=$ZIP_NAME" >> "$GITHUB_ENV"
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: v${{ steps.bump.outputs.version }}
           name: v${{ steps.bump.outputs.version }}

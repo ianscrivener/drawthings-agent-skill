@@ -1,12 +1,15 @@
 # drawthings-agent-skill
 
-An AI agent skill that lets your Copilot (or any compatible agent) generate images using [Draw Things](https://drawthings.ai) on your Mac. Just drop it into your skills folder, ask your agent to make an image, and it handles the rest — including setting up its own Python environment.
+An AI-Agent Skill that lets your Agent (Hermes, Claude Code, Github Copilot... or any compatible agent) generate images using [Draw Things](https://drawthings.ai) on your Mac. Just drop it into your skills folder, ask your agent to make an image, and it handles the rest.
+
+For MacOS & Linux Only. 
 
 ## What You Need
 
-- **macOS** with [Draw Things](https://drawthings.ai) installed
+- **macOS** or **Linux** with [Draw Things](https://drawthings.ai) application or CLI installed
 - **Draw Things API server** enabled: Draw Things → Settings → API Server (default port 7859)
-- **Python 3.10+** and [uv](https://docs.astral.sh/uv/) on your PATH
+- **Python 3.10+**
+- **curl****
 
 ## Installation
 

@@ -1,4 +1,89 @@
 # drawthings-agent-skill
+
+An AI agent skill that lets your Copilot (or any compatible agent) generate images using [Draw Things](https://drawthings.ai) on your Mac. Just drop it into your skills folder, ask your agent to make an image, and it handles the rest — including setting up its own Python environment.
+
+## What You Need
+
+- **macOS** with [Draw Things](https://drawthings.ai) installed
+- **Draw Things API server** enabled: Draw Things → Settings → API Server (default port 7859)
+- **Python 3.10+** and [uv](https://docs.astral.sh/uv/) on your PATH
+
+## Installation
+
+Clone or copy this repo into your agent's skills directory. The agent discovers the skill automatically from the `SKILL.md` manifest when you ask it to generate images.
+
+That's it. No manual setup required — the agent will check and bootstrap the Python environment itself the first time it runs.
+
+## What It Can Do
+
+- **Text-to-image**: "Generate a watercolor painting of a cat in a garden"
+- **Image-to-image**: "Take this photo and make it look like a pencil sketch"
+- **Server introspection**: "What models do I have available in Draw Things?"
+
+## How It Works Under the Hood
+
+The agent follows a check → setup → run workflow:
+
+1. Runs `check_env.py` to see if the Python environment is ready
+2. If not, runs `setup_env.py` to create the venv and install dependencies via `uv`
+3. Runs the appropriate module (`generate.py`, `img2img.py`, `list_models.py`) using the venv Python
+
+All modules output structured JSON, so the agent always knows what happened.
+
+## Manual Usage (Optional)
+
+You can also run the scripts directly if you want:
+
+```bash
+python src/drawthings/setup_env.py
+
+# Then run scripts
+.venv/bin/python src/drawthings/list_models.py
+.venv/bin/python src/drawthings/generate.py \
+  --prompt "a golden retriever on a beach at sunset" \
+  --output /tmp/result.png
+```
+
+## Project Structure
+
+```
+├── SKILL.md                      ← Agent skill manifest
+├── pyproject.toml
+├── README.md
+├── src/drawthings/
+│   ├── check_env.py              ← Environment check (zero-dependency)
+│   ├── setup_env.py              ← Environment setup (zero-dependency)
+│   ├── generate.py               ← txt2img CLI
+│   ├── img2img.py                ← img2img CLI
+│   ├── list_models.py            ← Server introspection
+│   ├── service.py                ← DTService gRPC client
+│   ├── config.py                 ← FlatBuffer config builder
+│   ├── image_helpers.py          ← DTTensor ↔ PIL Image conversion
+│   ├── cred.py                   ← TLS credentials
+│   └── generated/                ← Auto-generated (do not edit)
+├── assets/
+│   ├── references/               ← Config options docs
+│   ├── proto/                    ← Source .proto schemas
+│   └── fbs/                      ← Source .fbs schemas
+└── tests/
+```
+
+## Development
+
+```bash
+# Setup
+python src/drawthings/setup_env.py
+
+# Run tests
+pytest
+
+# Regenerate protobuf/flatbuffer code (after changing .proto or .fbs)
+./assets/gen_code.sh
+```
+
+## License
+
+Apache-2.0
 AI Agent Skill for DrawThings
 
 

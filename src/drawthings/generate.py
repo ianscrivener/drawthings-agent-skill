@@ -4,7 +4,7 @@
 Usage:
     python scripts/generate.py \\
         --prompt "a golden retriever on a beach at sunset" \\
-        --model "flux_qwen_srpo_v1.0_f16.ckpt" \\
+        --model "jibmix_zit_v1.0_fp16_f16" \\
         --output /tmp/result.png
 
 Outputs JSON to stdout: { "success": true, "output": "/absolute/path/to/output.png" }
@@ -19,13 +19,13 @@ def main():
     parser = argparse.ArgumentParser(description="Generate an image from a text prompt")
     parser.add_argument("--prompt", required=True, help="Positive prompt text")
     parser.add_argument("--negative", default="", help="Negative prompt text")
-    parser.add_argument("--model", default=None, help="Model filename")
-    parser.add_argument("--width", type=int, default=512, help="Image width (rounded to 64)")
-    parser.add_argument("--height", type=int, default=512, help="Image height (rounded to 64)")
-    parser.add_argument("--steps", type=int, default=20, help="Diffusion steps")
-    parser.add_argument("--guidance", type=float, default=None, help="CFG guidance scale")
-    parser.add_argument("--seed", type=int, default=None, help="Seed for reproducibility")
-    parser.add_argument("--output", default="./output.png", help="Output file path")
+    parser.add_argument("--model", default="jibmix_zit_v1.0_fp16_f16.ckpt", help="Model filename")
+    parser.add_argument("--width", type=int, default=1024, help="Image width (rounded to 64)")
+    parser.add_argument("--height", type=int, default=1024, help="Image height (rounded to 64)")
+    parser.add_argument("--steps", type=int, default=8, help="steps")
+    parser.add_argument("--guidance", type=float, default=1.5, help="CFG guidance scale")
+    parser.add_argument("--seed", type=int, default=-1, help="Seed for reproducibility")
+    parser.add_argument("--output", default="/tmp/drawthings.png", help="Output file path")
     parser.add_argument("--host", default="localhost:7859", help="gRPC server address")
     args = parser.parse_args()
 
@@ -52,6 +52,8 @@ def main():
                               progress_callback=_progress)
 
         output_path = os.path.abspath(args.output)
+        if not images:
+            raise Exception("DrawThings did not return any images.")
         images[0].save(output_path)
 
         print(json.dumps({"success": True, "output": output_path}))

@@ -133,13 +133,21 @@ class DTService:
         )
 
         images = []
+        last_preview = None
         for response in self.stub.GenerateImage(req):
             if progress_callback and response.HasField("currentSignpost"):
                 info = _parse_signpost(response.currentSignpost)
                 if info:
                     progress_callback(info)
+            if response.HasField("previewImage"):
+                last_preview = bytes(response.previewImage)
             for img_data in response.generatedImages:
                 images.append(convert_response_image(bytes(img_data)))
+
+        # Some Draw Things configurations deliver the final image as the last
+        # previewImage rather than in generatedImages.
+        if not images and last_preview:
+            images.append(convert_response_image(last_preview))
 
         return images
 

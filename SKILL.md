@@ -22,7 +22,7 @@ All setup scripts run with the system Python and have no dependencies on the dra
 ### Step 1: Check environment
 
 ```bash
-python src/drawthings/check_env.py --host localhost:7859
+./.venv/bin/python src/drawthings/check_env.py --host localhost:7859
 ```
 
 Returns JSON with `ready: true/false`, a `checks` object, `missing` list, and `venv_python` path.
@@ -31,7 +31,7 @@ If `ready` is `true`, skip to running scripts. Use the `venv_python` value from 
 ### Step 2: Setup (only if check reports not ready)
 
 ```bash
-python src/drawthings/setup_env.py
+./.venv/bin/python src/drawthings/setup_env.py
 ```
 
 Creates the `.venv`, installs all dependencies via `uv sync`, and verifies the package is importable.
@@ -43,9 +43,9 @@ This is idempotent — safe to run repeatedly.
 Use the `venv_python` path from check/setup (typically `.venv/bin/python`) to run scripts:
 
 ```bash
-.venv/bin/python src/drawthings/generate.py --prompt "..."
-.venv/bin/python src/drawthings/list_models.py
-.venv/bin/python src/drawthings/img2img.py --input /path/to/image.png --prompt "..."
+./.venv/bin/python src/drawthings/generate.py --prompt "..."
+./.venv/bin/python src/drawthings/list_models.py
+./.venv/bin/python src/drawthings/img2img.py --input /path/to/image.png --prompt "..."
 ```
 
 ## Available Scripts
@@ -62,64 +62,7 @@ All scripts output JSON to stdout. Errors are written to stderr with a non-zero 
 
 ---
 
-## Procedure: Generate an image from a text prompt
-
-1. Optionally run `list_models.py` to find an available model name
-2. Run `generate.py` with the prompt and model
-3. The saved file path is returned in the JSON output as `output`
-
-```bash
-python src/drawthings/generate.py \
-  --prompt "a golden retriever on a beach at sunset" \
-  --model "flux_qwen_srpo_v1.0_f16.ckpt" \
-  --width 512 --height 512 \
-  --output /tmp/result.png
-```
-
-**All flags for generate.py:**
-
-| Flag | Default | Description |
-|------|---------|-------------|
-| `--prompt` | *(required)* | Positive prompt text |
-| `--negative` | `""` | Negative prompt text |
-| `--model` | server default | Model filename (e.g. `flux_qwen_srpo_v1.0_f16.ckpt`) |
-| `--width` | `512` | Image width in pixels (rounded to nearest 64) |
-| `--height` | `512` | Image height in pixels (rounded to nearest 64) |
-| `--steps` | `20` | Diffusion steps |
-| `--guidance` | server default | CFG guidance scale (e.g. `7.5`) |
-| `--seed` | random | Seed for reproducibility |
-| `--output` | `./output.png` | Output file path (must end in `.png` or `.jpg`) |
-| `--host` | `localhost:7859` | Draw Things gRPC server address |
-
-**Output JSON:**
-```json
-{ "success": true, "output": "/absolute/path/to/output.png" }
-```
-
----
-
-## Procedure: Modify an existing image (img2img)
-
-```bash
-python src/drawthings/img2img.py \
-  --input /path/to/source.png \
-  --prompt "same scene but in winter with snow" \
-  --strength 0.6 \
-  --output /tmp/result.png
-```
-
-**All flags for img2img.py:**
-
-Same flags as `generate.py`, plus:
-
-| Flag | Default | Description |
-|------|---------|-------------|
-| `--input` | *(required)* | Path to source image |
-| `--strength` | `0.6` | How much to change the image (0=none, 1=full) |
-
----
-
-## Procedure: List available models
+## (1)Procedure: List available models
 
 ```bash
 python src/drawthings/list_models.py --host localhost:7859
@@ -137,6 +80,68 @@ python src/drawthings/list_models.py --host localhost:7859
 ```
 
 ---
+
+## (2) Procedure: Generate an image from a text prompt
+
+1. Optionally run `list_models.py` to find an available model name
+2. Run `generate.py` with the prompt and model
+3. The saved file path is returned in the JSON output as `output`
+
+```bash
+./.venv/bin/python src/drawthings/generate.py \
+  --prompt "a golden retriever on a beach at sunset" \
+  --model "flux_qwen_srpo_v1.0_f16.ckpt" \
+  --width 512 --height 512 \
+  --output /tmp/result.png
+```
+
+**All flags for generate.py:**
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--prompt` | *(required)* | Positive prompt text |
+| `--negative` | `""` | Negative prompt text |
+| `--model` | `z_image_1.0_q8p.ckpt` | Model filename (e.g. `z_image_1.0_q8p.ckpt`) |
+| `--width` | `1024` | Image width in pixels (rounded to nearest 64) |
+| `--height` | `1024` | Image height in pixels (rounded to nearest 64) |
+| `--steps` | `8` | Steps |
+| `--guidance` | server default | CFG guidance scale (e.g. `7.5`) |
+| `--seed` | `-1` | Seed for reproducibility |
+| `--output` | `/tmp/output.png` | Output file path (must end in `.png` or `.jpg`) |
+| `--host` | `localhost:7859` | Draw Things gRPC server address |
+
+**Output JSON:**
+```json
+{ "success": true, "output": "/absolute/path/to/output.png" }
+```
+
+---
+
+## (3) Procedure: Modify an existing image (img2img)
+
+```bash
+./.venv/bin/python src/drawthings/img2img.py \
+  --input /path/to/source.png \
+  --model z_image_1.0_q8p.ckpt \
+  --guidance 1.5 \
+  --width 1024 \
+  --height 1024 \
+  --prompt "same scene but in winter with snow" \
+  --strength 0.6 \
+  --output /tmp/result.png
+```
+
+**All flags for img2img.py:**
+
+Same flags as `generate.py`, plus:
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--input` | *(required)* | Path to source image |
+| `--strength` | `0.6` | How much to change the image (0=none, 1=full) |
+
+---
+
 
 ## Config Reference
 

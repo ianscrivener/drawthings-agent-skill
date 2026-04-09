@@ -2,9 +2,9 @@
 """list_models.py — List available models, LoRAs, ControlNets, etc.
 
 Usage:
-    python scripts/list_models.py
-    python scripts/list_models.py --host localhost:7859
-    python scripts/list_models.py --type models
+    python src/drawthings/list_models.py
+    python src/drawthings/list_models.py --host localhost:7859
+    python src/drawthings/list_models.py --type models    # upscalers | control_nets | loras | upscalers 
 
 Outputs JSON to stdout.
 """

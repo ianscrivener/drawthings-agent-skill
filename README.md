@@ -11,6 +11,22 @@ For MacOS & Linux Only.
 - **Python 3.10+**
 - **curl****
 
+## Draw Things API Server Settings
+
+> **Important** — This skill connects to Draw Things via **gRPC** (not HTTP). You must configure the API server in Draw Things to match these settings:
+>
+> | Setting | Required value |
+> |---------|----------------|
+> | **Protocol** | gRPC |
+> | **Port** | `7859` (default) |
+> | **TLS** | On |
+> | **Response Compression** | Off |
+>
+> Open Draw Things → Settings → API Server and make sure all four match.
+> <!-- TODO: add screenshot here -->
+
+If any of these are wrong the skill won't be able to connect. The most common issue is accidentally selecting HTTP instead of gRPC.
+
 ## Installation
 
 Clone or copy this repo into your agent's skills directory. The agent discovers the skill automatically from the `SKILL.md` manifest when you ask it to generate images.

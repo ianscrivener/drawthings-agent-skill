@@ -37,6 +37,9 @@ def main():
         from PIL import Image
         from drawthings.service import DTService
 
+        def _progress(info):
+            print(json.dumps({"progress": info}), file=sys.stderr, flush=True)
+
         config = {
             "width": args.width,
             "height": args.height,
@@ -52,7 +55,8 @@ def main():
         source = Image.open(os.path.abspath(args.input))
         svc = DTService(args.host)
         images = svc.img2img(source, args.prompt, args.negative,
-                             strength=args.strength, config=config)
+                             strength=args.strength, config=config,
+                             progress_callback=_progress)
 
         output_path = os.path.abspath(args.output)
         images[0].save(output_path)

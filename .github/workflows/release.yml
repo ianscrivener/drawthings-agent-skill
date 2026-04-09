@@ -60,7 +60,8 @@ jobs:
 
       - name: Create release zip
         run: |
-          ZIP_NAME="drawthings-agent-skill-v${{ steps.bump.outputs.version }}.zip"
+          # ZIP_NAME="drawthings-agent-skill-v${{ steps.bump.outputs.version }}.zip"
+          ZIP_NAME="drawthings.zip"
           zip -r "$ZIP_NAME" . \
             -x ".git/*" \
             -x ".github/*" \

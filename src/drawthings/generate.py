@@ -32,6 +32,9 @@ def main():
     try:
         from drawthings.service import DTService
 
+        def _progress(info):
+            print(json.dumps({"progress": info}), file=sys.stderr, flush=True)
+
         config = {
             "width": args.width,
             "height": args.height,
@@ -45,7 +48,8 @@ def main():
             config["guidance_scale"] = args.guidance
 
         svc = DTService(args.host)
-        images = svc.generate(args.prompt, args.negative, config=config)
+        images = svc.generate(args.prompt, args.negative, config=config,
+                              progress_callback=_progress)
 
         output_path = os.path.abspath(args.output)
         images[0].save(output_path)

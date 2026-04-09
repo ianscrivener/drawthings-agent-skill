@@ -21,6 +21,18 @@ def _round64(v, minimum=64):
     return max(round(v / 64) * 64, minimum)
 
 
+def _parse_signpost(signpost):
+    """Extract a progress dict from an ImageGenerationSignpostProto."""
+    field = signpost.WhichOneof("signpost")
+    if field is None:
+        return None
+    info = {"stage": field}
+    inner = getattr(signpost, field)
+    if hasattr(inner, "step"):
+        info["step"] = inner.step
+    return info
+
+
 class DTService:
     """High-level client for the Draw Things gRPC API.
 
@@ -77,7 +89,7 @@ class DTService:
     # ── Generate (txt2img) ─────────────────────────────────────────────
 
     def generate(self, prompt, negative_prompt="", config=None,
-                 image_bytes=None, mask_bytes=None):
+                 image_bytes=None, mask_bytes=None, progress_callback=None):
         """Generate image(s) from a text prompt.
 
         Args:
@@ -86,6 +98,10 @@ class DTService:
             config: Dict of generation config overrides (snake_case keys).
             image_bytes: Optional source image as DTTensor bytes (for img2img).
             mask_bytes: Optional mask as DTTensor bytes (for inpainting).
+            progress_callback: Optional callable(dict) called with progress
+                updates as they stream from the server. Each dict has a
+                "stage" key (e.g. "sampling", "textEncoded") and optionally
+                a "step" key for sampling stages.
 
         Returns:
             List of PIL Images.
@@ -118,6 +134,10 @@ class DTService:
 
         images = []
         for response in self.stub.GenerateImage(req):
+            if progress_callback and response.HasField("currentSignpost"):
+                info = _parse_signpost(response.currentSignpost)
+                if info:
+                    progress_callback(info)
             for img_data in response.generatedImages:
                 images.append(convert_response_image(bytes(img_data)))
 
@@ -126,7 +146,7 @@ class DTService:
     # ── img2img helper ─────────────────────────────────────────────────
 
     def img2img(self, source_image, prompt, negative_prompt="",
-                strength=0.6, config=None):
+                strength=0.6, config=None, progress_callback=None):
         """Modify an existing image according to a prompt.
 
         Args:
@@ -135,6 +155,7 @@ class DTService:
             negative_prompt: Negative prompt.
             strength: How much to change (0=none, 1=completely replace).
             config: Additional config overrides.
+            progress_callback: Optional callable(dict) for progress updates.
 
         Returns:
             List of PIL Images.
@@ -146,4 +167,6 @@ class DTService:
         c["height"] = height
 
         tensor = convert_image_for_request(source_image, width, height)
-        return self.generate(prompt, negative_prompt, config=c, image_bytes=tensor)
+        return self.generate(prompt, negative_prompt, config=c,
+                             image_bytes=tensor,
+                             progress_callback=progress_callback)
